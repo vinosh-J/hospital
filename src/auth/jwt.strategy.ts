@@ -7,7 +7,9 @@ interface JwtPayload {
   sub: string;
   email: string;
   usertype: 'doctor' | 'patient';
+  hospital: string;
 }
+
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') { // ✅ FIX: set strategy name to 'jwt'
@@ -20,11 +22,13 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') { // ✅ FIX:
   }
 
   validate(payload: JwtPayload) {
-    console.log('JWT payload in validate():', payload); 
-    return {
-      userId: payload.sub,
-      email: payload.email,
-      usertype: payload.usertype,
-    };
-  }
+  console.log('JWT payload in validate():', payload); 
+  return {
+    userId: payload.sub,
+    email: payload.email,
+    usertype: payload.usertype,
+    hospital: payload.hospital, // ✅ include this
+  };
+}
+
 }

@@ -34,15 +34,16 @@ export class AuthService {
 }
 
   login(user: userdocument): { access_token: string } {
-    const payload = {
-      // Cast _id as Types.ObjectId and call toString()
-      sub: (user._id as Types.ObjectId).toString(),
-      email: user.email,
-      usertype: user.usertype,
-    };
+  const payload = {
+    sub: (user._id as Types.ObjectId).toString(),
+    email: user.email,
+    usertype: user.usertype,
+    hospital: user.hospital.toString(), // ✅ include hospital
+  };
 
-    return {
-      access_token: this.jwtService.sign(payload),
-    };
-  }
+  return {
+    access_token: this.jwtService.sign(payload),
+  };
+}
+
 }
