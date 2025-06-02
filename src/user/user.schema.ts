@@ -1,0 +1,42 @@
+/* eslint-disable prettier/prettier */
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document, Types } from 'mongoose';
+
+export type userdocument = user & Document;
+
+@Schema()
+export class user extends Document {
+  @Prop({ required: true })
+  name: string;
+
+  @Prop()
+  address: string;
+
+  @Prop()
+  age: number;
+
+  @Prop({ required: true, unique: true })
+  email: string;
+
+  @Prop({ required: true, select: false })
+  password: string;
+
+  @Prop({ required: true, enum: ['doctor', 'patient'] })
+  usertype: 'doctor' | 'patient';
+
+  @Prop({ type: Types.ObjectId, ref: 'Hospital', required: true })
+  hospital: Types.ObjectId;
+
+  static _id: any;
+  static email: any;
+  static usertype: any;
+}
+
+export const userschema = SchemaFactory.createForClass(user);
+
+userschema.set('toJSON', {
+  transform: (_doc, ret) => {
+    delete ret.password;
+    return ret;
+  },
+});
