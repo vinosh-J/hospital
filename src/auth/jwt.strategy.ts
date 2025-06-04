@@ -27,7 +27,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') { // ✅ FIX:
     userId: payload.sub,
     email: payload.email,
     usertype: payload.usertype,
-    hospital: payload.hospital, // ✅ include this
+    hospital: payload.hospital, 
   };
 }
 

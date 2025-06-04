@@ -11,16 +11,19 @@ class LoginDto {
   @IsNotEmpty()
   password: string;
 }
-
-
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Public()
-  @Post('login')
-  async login(@Body() loginDto: LoginDto): Promise<{ access_token: string }> {
-    const user = await this.authService.validateUser(loginDto.email, loginDto.password);
-    return this.authService.login(user);
-  }
+@Post('login')
+async login(@Body() loginDto: LoginDto): Promise<{ message: string; access_token: string }> {
+  const user = await this.authService.validateUser(loginDto.email, loginDto.password);
+  const token = this.authService.login(user).access_token;
+  return {
+    message: 'Login successful',
+    access_token: token,
+  };
+}
+
 }
