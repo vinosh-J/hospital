@@ -1,25 +1,34 @@
 /* eslint-disable prettier/prettier */
-import { IsEmail, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
-//enables user to share createuserdto to access in multiple files
 export class CreateUserDto {
   @IsNotEmpty()
   name: string;
 
-
-
-
-  
   @IsOptional()
+  @IsString()
   address?: string;
 
-  @IsOptional() 
-  age?: string;
+  @IsOptional()
+  age?: number;
 
   @IsEmail()
   email: string;
 
   @IsNotEmpty()
   password: string;
+
+  @IsEnum(['doctor', 'patient'])
+  @IsOptional()
+  usertype: 'doctor' | 'patient';
+
+  @IsOptional()
+  hospital?: string;
+
+  @IsOptional()
+  @IsString()
+  identifier?: string;
+
+
 
 }

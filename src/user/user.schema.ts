@@ -2,7 +2,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 
-export type userdocument = user & Document;
+export type userdocument = user & Document & { _id: Types.ObjectId };
+
 
 @Schema()
 export class user extends Document {
@@ -27,9 +28,15 @@ export class user extends Document {
   @Prop({ type: Types.ObjectId, ref: 'Hospital', required: true })
   hospital: Types.ObjectId;
 
-  static _id: any;
-  static email: any;
-  static usertype: any;
+  @Prop()
+  otp?: string;
+
+  @Prop()
+  otpExpiresAt?: Date;
+
+ @Prop({ type: String })
+ identifier?: string;
+
 }
 
 export const userschema = SchemaFactory.createForClass(user);

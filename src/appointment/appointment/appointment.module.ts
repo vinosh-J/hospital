@@ -17,5 +17,6 @@ import { user, userschema } from 'src/user/user.schema';
   ],
   providers: [AppointmentService],
   controllers: [AppointmentController],
+  exports: [MongooseModule],
 })
 export class AppointmentModule {}

@@ -2,7 +2,7 @@
 import { Controller, Post, Body, Get, Param } from '@nestjs/common';
 import { HospitalService } from './hospital.service';
 import { Hospital } from './hospital.schema';
-import { Public } from 'src/auth/pubic.decorator'; // fixed import path
+import { Public } from 'src/auth/pubic.decorator';
 
 @Controller('hospital')
 export class HospitalController {

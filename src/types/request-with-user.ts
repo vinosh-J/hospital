@@ -6,8 +6,9 @@ export interface JwtUserPayload {
   userId: string;
   email: string;
   usertype: 'doctor' | 'patient';
+  role: 'doctor' | 'patient' ;
   hospital: string;
-}
+} 
 
 export interface RequestWithUser extends Request {
   user: JwtUserPayload;

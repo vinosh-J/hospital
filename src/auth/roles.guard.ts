@@ -33,10 +33,11 @@ export class RolesGuard implements CanActivate {
   }
 
   const request = context.switchToHttp().getRequest<RequestWithUser>();
-  console.log('🔍 Request.user:', request.user);
+ console.log(' Request.user in RolesGuard:', request.user);
+
   const user = request.user;
-  console.log('🧪 User in RolesGuard:', user);
-  console.log('🔒 Required Roles:', requiredRoles);
+  console.log(' User in RolesGuard:', user);
+  console.log(' Required Roles:', requiredRoles);
 
   if (!user || !user.usertype) {
     throw new ForbiddenException('User or usertype missing from request');

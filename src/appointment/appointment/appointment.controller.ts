@@ -18,7 +18,7 @@ import { Role } from 'time slot/role.enum';
 import { Roles } from 'auth/roles.decorator';
 import { RolesGuard } from 'auth/roles.guard';
 
-@Controller('patient')
+@Controller('appointment')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class AppointmentController {
   constructor(private readonly appointmentService: AppointmentService) {}
@@ -70,5 +70,18 @@ getUpcomingAppointments(@Req() req: Request) {
   return this.appointmentService.getUpcomingAppointments(user.userId);
 }
 
+@Get('doctor/appointments/today')
+@Roles(Role.Doctor)
+getDoctorsTodaysAppointments(@Req() req: Request) {
+  const user = req.user as { userId: string };
+  return this.appointmentService.getDoctorsTodaysAppointments(user.userId);
+}
+
+@Get('doctor/appointments/upcoming')
+@Roles(Role.Doctor)
+getDoctorsUpcomingAppointments(@Req() req: Request) {
+  const user = req.user as { userId: string };
+  return this.appointmentService.getDoctorsUpcomingAppointments(user.userId);
+}
 
 }
