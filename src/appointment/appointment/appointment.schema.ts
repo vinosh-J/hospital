@@ -42,6 +42,7 @@ export class Appointment {
     },
     required: true,
   })
+  
   patientDetails: {
     name: string;
     email: string;
@@ -50,7 +51,6 @@ export class Appointment {
     _id: Types.ObjectId;
   };
 }
-
 
 export type AppointmentDocument = Appointment & Document;
 export const AppointmentSchema = SchemaFactory.createForClass(Appointment);

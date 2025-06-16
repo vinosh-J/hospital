@@ -11,7 +11,6 @@ import { Request } from 'express';
 
 interface User {
   usertype: string;
-  // add other user properties if needed
 }
 
 interface RequestWithUser extends Request {
@@ -20,33 +19,30 @@ interface RequestWithUser extends Request {
 
 @Injectable()
 export class RolesGuard implements CanActivate {
-  constructor(private reflector: Reflector) {}
+  constructor(private readonly reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
-  const requiredRoles = this.reflector.getAllAndOverride<string[]>(
-    ROLES_KEY,
-    [context.getHandler(), context.getClass()],
-  );
+    const requiredRoles = this.reflector.getAllAndOverride<string[]>(
+      ROLES_KEY,
+      [context.getHandler(), context.getClass()],
+    );
 
-  if (!requiredRoles) {
-    return true; // No role required
+    if (!requiredRoles) return true;
+
+    const request = context.switchToHttp().getRequest<RequestWithUser>();
+    const user = request.user;
+
+    console.log('🔐 [RolesGuard] User:', user);
+    console.log('🔐 [RolesGuard] Required Roles:', requiredRoles);
+
+    if (!user || !user.usertype) {
+      throw new ForbiddenException('User not authenticated or missing role');
+    }
+
+    if (!requiredRoles.includes(user.usertype)) {
+      throw new ForbiddenException(`Access denied. Required role(s): ${requiredRoles.join(', ')}`);
+    }
+
+    return true;
   }
-
-  const request = context.switchToHttp().getRequest<RequestWithUser>();
- console.log(' Request.user in RolesGuard:', request.user);
-
-  const user = request.user;
-  console.log(' User in RolesGuard:', user);
-  console.log(' Required Roles:', requiredRoles);
-
-  if (!user || !user.usertype) {
-    throw new ForbiddenException('User or usertype missing from request');
-  }
-
-  if (!requiredRoles.includes(user.usertype)) {
-    throw new ForbiddenException('Access denied. You lack required role.');
-  }
-
-  return true;
-}
 }

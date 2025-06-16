@@ -22,8 +22,8 @@ export class user extends Document {
   @Prop({ required: true, select: false })
   password: string;
 
-  @Prop({ required: true, enum: ['doctor', 'patient'] })
-  usertype: 'doctor' | 'patient';
+  @Prop({ required: true, enum: ['doctor', 'patient', 'admin'] })
+  usertype: 'doctor' | 'patient' | 'admin';
 
   @Prop({ type: Types.ObjectId, ref: 'Hospital', required: true })
   hospital: Types.ObjectId;

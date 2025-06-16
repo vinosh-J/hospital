@@ -11,6 +11,7 @@ import { SlotModule } from './time slot/slot.module';
 import { AppointmentModule } from './appointment/appointment/appointment.module';
 import { PatientModule } from './patients/patient.module';
 import { DoctorModule } from './filters/doctor.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { DoctorModule } from './filters/doctor.module';
     SlotModule,
     AppointmentModule,
     DoctorModule,
+    AdminModule,
    
   ],
   providers: [

@@ -51,6 +51,11 @@ async findByEmail(email: string): Promise<PatientDocument | null> {
   return this.patientModel.findOne({ email: email.toLowerCase() }).exec();
 }
 
+async updateStatusByIdentifier(identifier: string, status: string): Promise<void> {
+  await this.patientModel.updateOne({ identifier }, { status }).exec();
+}
+
+
 
    
 }

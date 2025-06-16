@@ -32,7 +32,6 @@ interface JwtRequest extends Request {
   user: {
     hospital: string;
     role?: string;
-    // Add other fields from your JWT if needed
   };
 }
 

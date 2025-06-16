@@ -30,7 +30,7 @@ export class UserService {
   async create(data: CreateUserDto): Promise<userdocument> {
   // Only hash if the password is NOT already a BCrypt hash
   const hashedPassword = data.password.startsWith('$2') 
-    ? data.password // Already hashed → use as-is
+    ? data.password // Already hashed - use as-is
     : await bcrypt.hash(data.password, 10); // Not hashed → hash it
 
   const payload = {

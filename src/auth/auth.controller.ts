@@ -42,11 +42,13 @@ export class AuthController {
     };
   }
 
-  @Public()
-  @Post('send-otp')
-  async sendOtpToUser(@Body('email') email: string) {
-    return this.authService.sendOtpToUser(email);
-  }
+ @Public()
+@Post('send-otp')
+async sendOtpToUser(@Body('email') email: string) {
+  await this.authService.sendOtpToUser(email);
+  return { message: 'OTP sent successfully' };
+}
+
 
   @Public()
   @Post('reset-password')

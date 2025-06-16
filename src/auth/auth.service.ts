@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable prettier/prettier */
-import { Injectable, Logger, BadRequestException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException, NotFoundException, UnauthorizedException, InternalServerErrorException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import * as nodemailer from 'nodemailer';
@@ -145,46 +145,82 @@ export class AuthService {
     return regex.test(password);
   }
 
-  async requestOtpByIdentifier(identifier: string): Promise<{ message: string }> {
-    this.logger.log('Request received for identifier: ' + identifier);
+ async requestOtpByIdentifier(identifier: string): Promise<{ message: string }> {
+  this.logger.log('Request received for identifier: ' + identifier);
 
-    const patient = await this.patientService.findByIdentifier(identifier);
-    if (!patient) {
-      this.logger.warn(`No patient found for identifier: ${identifier}`);
-      throw new NotFoundException('Patient not found');
-    }
-
-    this.logger.log(`Sending OTP to patient: ${patient.name}, Email: ${patient.email}`);
-
-    try {
-      await this.sendOtpToPatient(patient.email);
-    } catch (error) {
-      this.logger.error('Error while sending OTP', error);
-      throw new Error('Failed to send OTP');
-    }
-
-    return { message: 'OTP sent to email' };
+  const patient = await this.patientService.findByIdentifier(identifier);
+  if (!patient) {
+    this.logger.warn(`No patient found for identifier: ${identifier}`);
+    throw new NotFoundException('Patient not found');
   }
+
+  const blockKey = `otp:block:${identifier}`;
+  const countKey = `otp:count:${identifier}`;
+
+  // Check if patient is blocked from requesting OTP
+  const isBlocked = await this.redisService.get(blockKey);
+  if (isBlocked) {
+    throw new BadRequestException('Too many OTP requests. Please try again after 5 minutes.');
+  }
+
+  // Get the number of OTP requests made
+  const count = await this.redisService.get(countKey);
+  const requestCount = count ? parseInt(count.toString()) : 0;
+
+  // If the limit is reached, block the user for 5 minutes
+  if (requestCount >= 5) {
+    await this.redisService.set(blockKey, 'blocked', 300); // 5 minutes block
+    await this.redisService.del(countKey); // reset count after blocking
+    throw new BadRequestException('Too many OTP requests. You are temporarily blocked for 5 minutes.');
+  }
+
+  try {
+    // Send OTP to the patient’s email
+    await this.sendOtpToPatient(patient.email);
+
+    // Increment the count and reset the expiry timer to 5 minutes
+    await this.redisService.set(countKey, (requestCount + 1).toString(), 300 );
+  } catch (error) {
+    this.logger.error('Error while sending OTP:', error);
+    if (error instanceof BadRequestException) {
+  throw error; // propagate expected validation error
+}
+throw new InternalServerErrorException('Failed to send OTP');
+
+  }
+
+  return { message: 'OTP sent to email' };
+}
 
   async verifyOtpAndGenerateJwt(email: string, otp: string): Promise<{ access_token: string }> {
-    const savedOtp = await this.redisService.get(`otp:${email}`);
-    if (!savedOtp || savedOtp.toString() !== otp) {
-      throw new BadRequestException('Invalid or expired OTP');
-    }
-
-    const patient = await this.patientService.findByEmail(email);
-    if (!patient) throw new NotFoundException('Patient not found');
-
-    const payload: JwtPayload = {
-      name: patient.name,
-      email: patient.email,
-      identifier: patient.identifier,
-    };
+  const savedOtp = await this.redisService.get(`otp:${email}`);
   
-
-    await this.redisService.del(`otp:${email}`);
-    return { access_token: this.jwtService.sign(payload) };
+  if (!savedOtp || savedOtp.toString() !== otp) {
+    throw new BadRequestException('Invalid or expired OTP');
   }
+
+  const patient = await this.patientService.findByEmail(email);
+  if (!patient) {
+    throw new NotFoundException('Patient not found');
+  }
+
+  const payload: JwtPayload = {
+    name: patient.name,
+    email: patient.email,
+    identifier: patient.identifier,
+  };
+
+  // Clear OTP and reset the rate limit and block keys
+  await this.redisService.del(`otp:${email}`);
+  await this.redisService.del(`otp:count:${patient.identifier}`);
+  await this.redisService.del(`otp:block:${patient.identifier}`);
+
+  const access_token = this.jwtService.sign(payload);
+
+  return { access_token };
+}
+
+
 
   async registerPatient(data: {
   email: string;
@@ -221,6 +257,8 @@ export class AuthService {
     usertype: 'patient',
     hospital: data.hospitalId,
   });
+
+  await this.patientService.updateStatusByIdentifier(data.identifier, 'active');
 
   return {
     message: 'Patient registration completed',

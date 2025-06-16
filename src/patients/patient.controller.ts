@@ -10,7 +10,6 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { PatientService } from './patient.service';
 import { Public } from 'src/auth/pubic.decorator';
 
-// Define the expected file type explicitly
 interface SafeMulterFile extends Express.Multer.File {
   buffer: Buffer;
 }
